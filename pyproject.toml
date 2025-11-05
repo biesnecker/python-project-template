@@ -1,0 +1,32 @@
+[project]
+name = "template"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+dev-dependencies = [
+    "ruff>=0.8.0",
+    "ty>=0.0.1a25",
+    "pytest>=8.0.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+# pycodestyle errors, warnings, pyflakes, isort, pep8-naming, pyupgrade
+# flake8-bugbear, flake8-comprehensions, flake8-simplify, flake8-type-checking, Ruff-specific
+select = ["E", "W", "F", "I", "N", "UP", "B", "C4", "SIM", "TCH", "RUF"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ty]
+# ty configuration will be added here once ty is released
+# For now, ty will use sensible defaults
