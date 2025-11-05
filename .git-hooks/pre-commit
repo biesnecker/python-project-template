@@ -1,0 +1,64 @@
+#!/bin/sh
+#
+# Combined pre-commit hook: bd (beads) + tooling checks
+#
+# This hook:
+# 1. Flushes bd issue changes to .beads/issues.jsonl
+# 2. Runs ruff formatting and linting
+# 3. Runs ty typechecking
+# 4. Runs pytest
+
+set -e  # Exit on first error
+
+# ============================================================================
+# bd (beads) pre-commit flush
+# ============================================================================
+
+# Check if bd is available
+if command -v bd >/dev/null 2>&1 && [ -d .beads ]; then
+    echo "Flushing bd changes..."
+    # Flush pending changes to JSONL
+    if ! bd sync --flush-only >/dev/null 2>&1; then
+        echo "Error: Failed to flush bd changes to JSONL" >&2
+        echo "Run 'bd sync --flush-only' manually to diagnose" >&2
+        exit 1
+    fi
+
+    # If the JSONL file was modified, stage it
+    if [ -f .beads/issues.jsonl ]; then
+        git add .beads/issues.jsonl 2>/dev/null || true
+    fi
+fi
+
+# ============================================================================
+# Tooling checks (ruff, ty, pytest)
+# ============================================================================
+
+# Check if uv is available
+if ! command -v uv >/dev/null 2>&1; then
+    echo "Warning: uv not found, skipping tooling checks" >&2
+    exit 0
+fi
+
+# Check if we have a pyproject.toml (Python project)
+if [ ! -f pyproject.toml ]; then
+    exit 0
+fi
+
+echo "Running ruff format..."
+uv run ruff format .
+
+echo "Running ruff check..."
+uv run ruff check --fix .
+
+echo "Running ty typechecker..."
+uv run ty check
+
+echo "Running pytest..."
+uv run pytest
+
+# Stage any files that were auto-fixed by ruff
+git add -u
+
+echo "✓ All pre-commit checks passed!"
+exit 0
